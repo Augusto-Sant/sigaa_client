@@ -28,8 +28,9 @@ def setup_env():
 
     LOGIN = os.environ.get("LOGIN")
     PASSWORD = os.environ.get("PASSWORD")
+    PATH_DRIVER = os.environ.get("PATH_CHROME_DRIVER")
 
-    return LOGIN, PASSWORD
+    return LOGIN, PASSWORD, PATH_DRIVER
 
 
 def login_sigaa(driver, url, login, password):
@@ -57,11 +58,8 @@ def login_sigaa(driver, url, login, password):
 
 
 def main():
-    PATH_DRIVER = (
-        "C:\\Users\\jadar\\OneDrive\\Documentos\\ChromeDriver\\chromedriver.exe"
-    )
     URL_SIGAA_LOGIN = "https://sig.ifc.edu.br/sigaa/verTelaLogin.do"
-    LOGIN, PASSWORD = setup_env()
+    LOGIN, PASSWORD, PATH_DRIVER = setup_env()
 
     driver = activate_chrome_driver(PATH_DRIVER)
     # LOGAR
