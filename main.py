@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC  # conditions f
 
 from time import sleep
 import pandas as pd
+import unicodedata
 
 
 def activate_chrome_driver(path):
@@ -53,7 +54,6 @@ def login_sigaa(driver, url, login, password):
     user_login_input.send_keys(login)
     user_password_input = login_form.find_element(By.NAME, "user.senha")
     user_password_input.send_keys(password)
-    sleep(1)
     login_form.submit()
 
 
@@ -75,7 +75,6 @@ def main():
         link_turma = turma.find_element(By.TAG_NAME, "a")
         nome_turma = link_turma.text
         turmas.update({nome_turma: []})
-    print(turmas)
 
     for i in range(len(turmas)):
         div_turmas = WebDriverWait(driver, timeout=10).until(
@@ -83,7 +82,7 @@ def main():
         )
         form_turmas = div_turmas.find_elements(By.TAG_NAME, "form")[i + 1 :]
         link_turma = form_turmas[0].find_element(By.TAG_NAME, "a")
-        print(link_turma.text)
+        nome_turma = link_turma.text.strip().lower()
         link_turma.click()
 
         div_barra_esquerda = WebDriverWait(driver, timeout=10).until(
@@ -91,16 +90,28 @@ def main():
         )
 
         #
-        item_menu = div_barra_esquerda.find_elements(By.CLASS_NAME, "itemMenu")
-        for item in item_menu:
-            print(item.text)
+        if i == 0:
+            botao_alunos = div_barra_esquerda.find_element(
+                By.CLASS_NAME, "itemMenuHeaderAlunos"
+            )
+            botao_alunos.click()
+        ver_notas_link = div_barra_esquerda.find_elements(By.TAG_NAME, "a")[9]
+        ver_notas_link.click()
         tabela_relatorio = WebDriverWait(driver, timeout=10).until(
             lambda d: d.find_element(By.CLASS_NAME, "tabelaRelatorio")
         )
         #
 
-        relatorio_data = pd.read_html(tabela_relatorio.get_attribute("outerHTML"))
-        print(relatorio_data)
+        relatorio_data = pd.read_html(tabela_relatorio.get_attribute("outerHTML"))[0]
+        normalized_nome_turma = (
+            unicodedata.normalize("NFKD", nome_turma)
+            .encode("ASCII", "ignore")
+            .decode("utf-8")
+            .lower()
+            .strip()
+            .replace(" ", "_")
+        )
+        relatorio_data.to_csv(f"relatorio_{normalized_nome_turma}.csv")
 
         for j in range(2):
             driver.back()
