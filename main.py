@@ -97,24 +97,32 @@ def main():
             botao_alunos.click()
         ver_notas_link = div_barra_esquerda.find_elements(By.TAG_NAME, "a")[9]
         ver_notas_link.click()
-        tabela_relatorio = WebDriverWait(driver, timeout=10).until(
-            lambda d: d.find_element(By.CLASS_NAME, "tabelaRelatorio")
-        )
-        #
 
-        relatorio_data = pd.read_html(tabela_relatorio.get_attribute("outerHTML"))[0]
-        normalized_nome_turma = (
-            unicodedata.normalize("NFKD", nome_turma)
-            .encode("ASCII", "ignore")
-            .decode("utf-8")
-            .lower()
-            .strip()
-            .replace(" ", "_")
-        )
-        relatorio_data.to_csv(f"relatorio_{normalized_nome_turma}.csv")
+        # Pegar Notas
+        try:
+            tabela_relatorio = WebDriverWait(driver, timeout=5).until(
+                lambda d: d.find_element(By.CLASS_NAME, "tabelaRelatorio")
+            )
+            #
+
+            relatorio_data = pd.read_html(tabela_relatorio.get_attribute("outerHTML"))[
+                0
+            ]
+            normalized_nome_turma = (
+                unicodedata.normalize("NFKD", nome_turma)
+                .encode("ASCII", "ignore")
+                .decode("utf-8")
+                .lower()
+                .strip()
+                .replace(" ", "_")
+            )
+            relatorio_data.to_csv(f"relatorios/relatorio_{normalized_nome_turma}.csv")
+        except Exception as e:
+            print("Error:", e)
 
         for j in range(2):
             driver.back()
+            sleep(1)
 
 
 if __name__ == "__main__":
